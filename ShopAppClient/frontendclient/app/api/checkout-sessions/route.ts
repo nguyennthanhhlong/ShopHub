@@ -3,7 +3,7 @@ import { NextResponse } from 'next/server';
 import Stripe from 'stripe';
 
 // Use a recent, standard API version.
-const stripe = new Stripe(process.env.STRIPE_SECRET_KEY as string, {
+const stripe = new Stripe((process.env.STRIPE_SECRET_KEY as string) || 'sk_test_dummy', {
   apiVersion: '2025-10-29.clover',
 });
 

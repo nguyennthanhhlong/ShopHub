@@ -199,7 +199,7 @@ export default function FloatingChatBox() {
       let orderIntents: OrderIntent[] | undefined = undefined;
 
       // Trích xuất ORDER_INTENT bằng regex mới
-      const intentRegex = /@@ORDER_INTENT_START@@(.*?)@@ORDER_INTENT_END@@/s;
+      const intentRegex = /@@ORDER_INTENT_START@@([\s\S]*?)@@ORDER_INTENT_END@@/;
       const match = aiAnswer.match(intentRegex);
       if (match && match[1]) {
         try {
@@ -240,14 +240,14 @@ export default function FloatingChatBox() {
       }
 
       // Xóa tất cả dấu vết của order intent khỏi hiển thị (phòng khi AI xuất ra nhiều cái)
-      aiAnswer = aiAnswer.replace(/@@ORDER_INTENT_START@@.*?@@ORDER_INTENT_END@@/gs, '').trim();
-      aiAnswer = aiAnswer.replace(/@@ORDER_INTENT_START@@.*/gs, '').trim(); // AI quên đóng thẻ
-      aiAnswer = aiAnswer.replace(/\[ORDER_INTENT:.*?\]/gs, '').trim(); // Fallback thẻ cũ
-      aiAnswer = aiAnswer.replace(/\[ORDER_INTENT:.*/gs, '').trim(); // Fallback thẻ cũ bị lỗi
+      aiAnswer = aiAnswer.replace(/@@ORDER_INTENT_START@@[\s\S]*?@@ORDER_INTENT_END@@/g, '').trim();
+      aiAnswer = aiAnswer.replace(/@@ORDER_INTENT_START@@[\s\S]*/g, '').trim(); // AI quên đóng thẻ
+      aiAnswer = aiAnswer.replace(/\[ORDER_INTENT:[\s\S]*?\]/g, '').trim(); // Fallback thẻ cũ
+      aiAnswer = aiAnswer.replace(/\[ORDER_INTENT:[\s\S]*/g, '').trim(); // Fallback thẻ cũ bị lỗi
 
       // Trích xuất PRODUCT_LIST
       let productDisplays: ProductDisplay[] | undefined = undefined;
-      const productRegex = /@@PRODUCT_LIST_START@@(.*?)@@PRODUCT_LIST_END@@/s;
+      const productRegex = /@@PRODUCT_LIST_START@@([\s\S]*?)@@PRODUCT_LIST_END@@/;
       const productMatch = aiAnswer.match(productRegex);
       if (productMatch && productMatch[1]) {
         try {
@@ -258,12 +258,12 @@ export default function FloatingChatBox() {
       }
       
       // Xóa dấu vết của product list
-      aiAnswer = aiAnswer.replace(/@@PRODUCT_LIST_START@@.*?@@PRODUCT_LIST_END@@/gs, '').trim();
-      aiAnswer = aiAnswer.replace(/@@PRODUCT_LIST_START@@.*/gs, '').trim();
+      aiAnswer = aiAnswer.replace(/@@PRODUCT_LIST_START@@[\s\S]*?@@PRODUCT_LIST_END@@/g, '').trim();
+      aiAnswer = aiAnswer.replace(/@@PRODUCT_LIST_START@@[\s\S]*/g, '').trim();
 
       // Trích xuất CART_ACTION
       let cartActions: CartAction[] | undefined = undefined;
-      const cartRegex = /@@ACTION_CART_START@@(.*?)@@ACTION_CART_END@@/s;
+      const cartRegex = /@@ACTION_CART_START@@([\s\S]*?)@@ACTION_CART_END@@/;
       const cartMatch = aiAnswer.match(cartRegex);
       if (cartMatch && cartMatch[1]) {
         try {
@@ -285,11 +285,11 @@ export default function FloatingChatBox() {
           console.error("Failed to parse cart action JSON", e);
         }
       }
-      aiAnswer = aiAnswer.replace(/@@ACTION_CART_START@@.*?@@ACTION_CART_END@@/gs, '').trim();
+      aiAnswer = aiAnswer.replace(/@@ACTION_CART_START@@[\s\S]*?@@ACTION_CART_END@@/g, '').trim();
 
       // Trích xuất CHECKOUT_INTENT
       let checkoutIntent: CheckoutIntent | undefined = undefined;
-      const checkoutRegex = /@@ACTION_CHECKOUT_START@@(.*?)@@ACTION_CHECKOUT_END@@/s;
+      const checkoutRegex = /@@ACTION_CHECKOUT_START@@([\s\S]*?)@@ACTION_CHECKOUT_END@@/;
       const checkoutMatch = aiAnswer.match(checkoutRegex);
       if (checkoutMatch && checkoutMatch[1]) {
         try {
@@ -298,11 +298,11 @@ export default function FloatingChatBox() {
           console.error("Failed to parse checkout intent JSON", e);
         }
       }
-      aiAnswer = aiAnswer.replace(/@@ACTION_CHECKOUT_START@@.*?@@ACTION_CHECKOUT_END@@/gs, '').trim();
+      aiAnswer = aiAnswer.replace(/@@ACTION_CHECKOUT_START@@[\s\S]*?@@ACTION_CHECKOUT_END@@/g, '').trim();
 
       // Trích xuất COUPON_INTENT
       let couponIntent: { couponCode: string } | undefined = undefined;
-      const couponRegex = /@@ACTION_COUPON_START@@(.*?)@@ACTION_COUPON_END@@/s;
+      const couponRegex = /@@ACTION_COUPON_START@@([\s\S]*?)@@ACTION_COUPON_END@@/;
       const couponMatch = aiAnswer.match(couponRegex);
       if (couponMatch && couponMatch[1]) {
         try {
@@ -314,7 +314,7 @@ export default function FloatingChatBox() {
           console.error("Failed to parse coupon intent JSON", e);
         }
       }
-      aiAnswer = aiAnswer.replace(/@@ACTION_COUPON_START@@.*?@@ACTION_COUPON_END@@/gs, '').trim();
+      aiAnswer = aiAnswer.replace(/@@ACTION_COUPON_START@@[\s\S]*?@@ACTION_COUPON_END@@/g, '').trim();
 
       const aiMessage: Message = {
         sender: 'ai',

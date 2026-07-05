@@ -22,11 +22,11 @@ export type ProductResponse = {
 
 export type ProductQueryParams = {
   keyword?: string; // Tùy chọn, vì có thể không có từ khóa
-  pageNumber?: string;
-  pageSize?: string;
+  pageNumber?: string | number;
+  pageSize?: string | number;
   sortBy?: string;
   sortOrder?: string;
-  categoryId?: string; // Tùy chọn
+  categoryId?: string | number; // Tùy chọn
   // Thêm bất kỳ tham số truy vấn nào khác ở đây
 };
 

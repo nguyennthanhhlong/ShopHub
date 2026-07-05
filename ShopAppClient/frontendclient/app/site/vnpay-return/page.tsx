@@ -1,12 +1,12 @@
 'use client';
 
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, Suspense } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
 import { CheckCircle, XCircle, ArrowRight } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 
-export default function VnpayReturnPage() {
+function VnpayReturnPageContent() {
   const searchParams = useSearchParams();
   const router = useRouter();
   
@@ -75,5 +75,13 @@ export default function VnpayReturnPage() {
         )}
       </Card>
     </section>
+  );
+}
+
+export default function VnpayReturnPage() {
+  return (
+    <Suspense fallback={<div className='h-screen flex items-center justify-center text-slate-600'>Đang tải trang...</div>}>
+      <VnpayReturnPageContent />
+    </Suspense>
   );
 }

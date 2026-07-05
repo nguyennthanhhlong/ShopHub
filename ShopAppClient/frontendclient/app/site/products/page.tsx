@@ -2,7 +2,7 @@
 import { getImageUrl } from '@/lib/utils';
 
 
-import React, { useState, useMemo, useEffect, useCallback } from 'react';
+import React, { useState, useMemo, useEffect, useCallback, Suspense } from 'react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import {
@@ -35,7 +35,7 @@ import 'react-toastify/dist/ReactToastify.css';
 import { motion, AnimatePresence } from 'framer-motion';
 import { WishlistButton } from '@/components/wishlist-button';
 
-export default function ProductsPage() {
+function ProductsPageContent() {
   const searchParams = useSearchParams();
   const initialCategory = searchParams.get('category') || 'all';
   const initialQuery = searchParams.get('query') || '';
@@ -80,8 +80,8 @@ export default function ProductsPage() {
         if (catData && Array.isArray(catData)) setAvailableCategories(catData);
         if (headerData?.data?.length > 0) {
           setHeaderContent({
-            title: headerData.data[0].title || headerContent.title,
-            subtitle: headerData.data[0].subtitle || headerContent.subtitle
+            title: headerData?.data[0]?.title || headerContent.title,
+            subtitle: headerData?.data[0]?.subtitle || headerContent.subtitle
           });
         }
       } catch (error) {
@@ -104,50 +104,51 @@ export default function ProductsPage() {
     return { sortField, sortOrder };
   };
 
-  const fetchProducts = useCallback(async () => {
-    const { sortField, sortOrder } = getSortParams();
-    const apiParams = {
-      keyword: query.trim() || undefined,
-      pageNumber: page.toString(),
-      pageSize: pageSize.toString(),
-      sortBy: sortField,
-      sortOrder: sortOrder,
-      categoryId: category !== 'all' ? category : '0',
-    };
-
-    setLoading(true);
-    try {
-      const response = await getProducts(apiParams);
-      if (!response || !response.data) {
-        setProducts([]);
-        setTotalPages(1);
-        return;
+  const fetchProductsData = useCallback(
+    async (currentPage: number) => {
+      setLoading(true);
+      try {
+        const { sortField, sortOrder } = getSortParams();
+        const queryParams: any = {
+          pageNumber: currentPage,
+          pageSize,
+          sortBy: sortField,
+          sortOrder,
+        };
+        if (category !== 'all') queryParams.categoryId = category;
+        if (query) queryParams.keyword = query;
+        
+        const res = await getProducts(queryParams);
+        
+        // Cập nhật lại products
+        setProducts(res.data?.content || []);
+        
+        const total = res.data?.totalPages;
+        setTotalPages(typeof total === 'number' && !isNaN(total) ? total : 1);
+      } catch (error) {
+        console.error('Error loading products:', error);
+        toast.error('Lỗi khi tải sản phẩm. Thử lại sau!');
+      } finally {
+        setLoading(false);
+        setLoadingInitial(false);
       }
-      const json = response.data;
-      setProducts(json.content || []);
-      setTotalPages(Math.ceil((json.totalElements || 0) / pageSize));
-    } catch (error) {
-      console.error('Failed to fetch products:', error);
-    } finally {
-      setLoading(false);
-      setLoadingInitial(false);
-    }
-  }, [query, category, sortBy, page]);
+    },
+    [category, query, sortBy]
+  );
 
   useEffect(() => {
-    if (isFilterOrSortChanged && page !== 1) {
-      setPage(1);
-      setIsFilterOrSortChanged(false);
-      return;
+    if (mounted) {
+      if (isFilterOrSortChanged) {
+        setPage(1);
+        setIsFilterOrSortChanged(false); 
+      }
+      fetchProductsData(isFilterOrSortChanged ? 1 : page);
     }
-    fetchProducts();
-    if (page === 1) setIsFilterOrSortChanged(false);
-  }, [query, category, sortBy, page, fetchProducts, isFilterOrSortChanged]);
+  }, [mounted, fetchProductsData, page, isFilterOrSortChanged]);
 
   const handlePageChange = (newPage: number) => {
     if (newPage >= 1 && newPage <= totalPages) {
       setPage(newPage);
-      window.scrollTo({ top: 300, behavior: 'smooth' });
     }
   };
 
@@ -158,109 +159,144 @@ export default function ProductsPage() {
   if (!mounted) return null;
 
   return (
-    <div className="min-h-screen bg-slate-50/50 pb-20">
-      <ToastContainer />
+    <div className="min-h-screen bg-slate-50">
+      <ToastContainer position="top-right" autoClose={2000} />
       
-      {/* Header Hero Section */}
-      <div className="bg-gradient-to-br from-indigo-900 via-indigo-800 to-purple-900 text-white py-24 relative overflow-hidden">
-        <div className="absolute inset-0 bg-[url('/grid.svg')] bg-center opacity-20 [mask-image:linear-gradient(180deg,white,rgba(255,255,255,0))]"></div>
-        <div className="container mx-auto px-4 relative z-10 text-center max-w-3xl">
-          <motion.h1 
-            initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }}
-            className="text-4xl md:text-6xl font-bold mb-6"
-          >
+      {/* 🚀 Hero Section */}
+      <div className="bg-indigo-900 text-white py-16 px-4 mb-8">
+        <div className="container mx-auto max-w-7xl text-center space-y-4">
+          <h1 className="text-4xl md:text-5xl font-extrabold tracking-tight">
             {headerContent.title}
-          </motion.h1>
-          <motion.p 
-            initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5, delay: 0.1 }}
-            className="text-lg md:text-xl text-indigo-100/90"
-          >
+          </h1>
+          <p className="text-indigo-200 max-w-2xl mx-auto text-lg">
             {headerContent.subtitle}
-          </motion.p>
+          </p>
         </div>
       </div>
 
-      <div className="container mx-auto px-4 -mt-8 relative z-20">
-        <div className="bg-white rounded-2xl shadow-xl shadow-slate-200/50 p-6 flex flex-col md:flex-row gap-4 items-center justify-between">
-          
-          <div className="flex-1 w-full relative group">
-            <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400 group-focus-within:text-indigo-600 transition-colors" />
-            <Input
-              placeholder="Tìm kiếm sản phẩm..."
-              value={query}
-              onChange={(e) => { setQuery(e.target.value); setIsFilterOrSortChanged(true); }}
-              className="pl-12 h-14 rounded-xl bg-slate-50 border-slate-200 focus-visible:ring-indigo-600 focus-visible:bg-white transition-all text-base"
-            />
-          </div>
+      <div className="container mx-auto max-w-7xl px-4 pb-16">
+        
+        {/* 🔍 Search & Filter Bar */}
+        <Card className="mb-10 shadow-sm border-0 sticky top-4 z-20 bg-white/90 backdrop-blur-md">
+          <CardContent className="p-4 md:p-6">
+            <div className="flex flex-col md:flex-row gap-4 items-center">
+              <div className="relative flex-1 w-full">
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 h-5 w-5" />
+                <Input
+                  placeholder="Tìm kiếm sản phẩm, thương hiệu..."
+                  className="pl-10 h-12 rounded-xl border-slate-200 bg-slate-50 focus-visible:ring-indigo-600"
+                  value={query}
+                  onChange={(e) => {
+                    setQuery(e.target.value);
+                    setIsFilterOrSortChanged(true);
+                  }}
+                />
+              </div>
+              
+              <div className="flex gap-4 w-full md:w-auto">
+                <Select 
+                  value={category} 
+                  onValueChange={(val) => {
+                    setCategory(val);
+                    setIsFilterOrSortChanged(true);
+                  }}
+                >
+                  <SelectTrigger className="w-full md:w-[200px] h-12 rounded-xl border-slate-200">
+                    <SelectValue placeholder="Danh mục" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {categoryOptions.map((opt) => (
+                      <SelectItem key={opt.value} value={opt.value}>
+                        {opt.label}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
 
-          <div className="flex gap-4 w-full md:w-auto">
-            <Select 
-              value={category} 
-              onValueChange={(v) => { setCategory(v); setIsFilterOrSortChanged(true); }}
-            >
-              <SelectTrigger className="w-full md:w-[200px] h-14 rounded-xl bg-slate-50 border-slate-200">
-                <SelectValue placeholder="Danh mục" />
-              </SelectTrigger>
-              <SelectContent className="rounded-xl">
-                {categoryOptions.map(opt => (
-                  <SelectItem key={opt.value} value={opt.value} className="cursor-pointer">{opt.label}</SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+                <Select 
+                  value={sortBy} 
+                  onValueChange={(val) => {
+                    setSortBy(val);
+                    setIsFilterOrSortChanged(true);
+                  }}
+                >
+                  <SelectTrigger className="w-full md:w-[180px] h-12 rounded-xl border-slate-200">
+                    <Filter className="h-4 w-4 mr-2 text-slate-500" />
+                    <SelectValue placeholder="Sắp xếp" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="none">Mặc định</SelectItem>
+                    <SelectItem value="price-asc">Giá: Thấp đến Cao</SelectItem>
+                    <SelectItem value="price-desc">Giá: Cao đến Thấp</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
 
-            <Select 
-              value={sortBy} 
-              onValueChange={(v) => { setSortBy(v); setIsFilterOrSortChanged(true); }}
-            >
-              <SelectTrigger className="w-full md:w-[200px] h-14 rounded-xl bg-slate-50 border-slate-200">
-                <SelectValue placeholder="Sắp xếp" />
-              </SelectTrigger>
-              <SelectContent className="rounded-xl">
-                <SelectItem value="none" className="cursor-pointer">Mặc định</SelectItem>
-                <SelectItem value="price-asc" className="cursor-pointer">Giá: Thấp → Cao</SelectItem>
-                <SelectItem value="price-desc" className="cursor-pointer">Giá: Cao → Thấp</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
-        </div>
-      </div>
-
-      <div className="container mx-auto px-4 mt-12">
+        {/* 📦 Product Grid */}
         {loadingInitial ? (
-          <div className="flex flex-col items-center justify-center py-20">
-            <Loader2 className="w-10 h-10 animate-spin text-indigo-600 mb-4" />
-            <p className="text-slate-500 font-medium">Đang tải sản phẩm...</p>
+          <div className="flex flex-col items-center justify-center py-20 text-slate-400 space-y-4">
+            <Loader2 className="h-10 w-10 animate-spin text-indigo-600" />
+            <p>Đang tải dữ liệu sản phẩm...</p>
           </div>
         ) : (
           <>
-            {loading ? (
-              <div className="flex justify-center py-20">
-                <Loader2 className="w-8 h-8 animate-spin text-indigo-600" />
-              </div>
-            ) : products.length > 0 ? (
-              <motion.div 
-                initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.5 }}
-                className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8"
-              >
-                {products.map((product, idx) => {
-                  const hasDiscount = product.discount > 0;
-                  const discountPercent = product.discount || 0;
-                  const finalPrice = hasDiscount ? product.price * (1 - discountPercent / 100) : product.price;
-                  const { badgeText, badgeColor } = computeBadge(product); 
+            <AnimatePresence mode='wait'>
+              {products.length === 0 ? (
+                <motion.div 
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -20 }}
+                  className="text-center py-20 bg-white rounded-2xl border border-dashed border-slate-300"
+                >
+                  <Box className="h-16 w-16 mx-auto text-slate-300 mb-4" />
+                  <h3 className="text-xl font-bold text-slate-700 mb-2">Không tìm thấy sản phẩm</h3>
+                  <p className="text-slate-500">Hãy thử thay đổi từ khóa hoặc bộ lọc để xem các kết quả khác.</p>
+                  <Button 
+                    variant="outline" 
+                    className="mt-6 text-indigo-600 border-indigo-200 hover:bg-indigo-50"
+                    onClick={() => {
+                      setQuery('');
+                      setCategory('all');
+                      setSortBy('none');
+                      setIsFilterOrSortChanged(true);
+                    }}
+                  >
+                    Xóa bộ lọc
+                  </Button>
+                </motion.div>
+              ) : (
+                <motion.div 
+                  className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6"
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  transition={{ staggerChildren: 0.1 }}
+                >
+                  {products.map((product) => {
+                    const hasDiscount = product.discount > 0;
+                    const discountPercent = product.discount || 0;
+                    const finalPrice = hasDiscount ? product.price * (1 - discountPercent / 100) : product.price;
+                    const { badgeText, badgeColor } = computeBadge(product); 
 
-                  return (
-                    <motion.div 
-                      key={product.productId}
-                      initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: idx * 0.05 }}
-                    >
-                      <Card 
-                        draggable={true}
-                        onDragStart={(e) => {
-                          e.dataTransfer.setData('application/json', JSON.stringify(product));
-                        }}
-                        className="h-full group overflow-hidden border-0 shadow-md hover:shadow-2xl transition-all duration-300 rounded-2xl bg-white flex flex-col cursor-grab active:cursor-grabbing"
+                    return (
+                      <motion.div 
+                        key={product.productId}
+                        initial={{ opacity: 0, y: 20 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        exit={{ opacity: 0, y: -20 }}
+                        whileHover={{ y: -5 }}
+                        transition={{ duration: 0.3 }}
                       >
-                        <div className="relative aspect-square overflow-hidden bg-slate-100">
+                        <Card 
+                          draggable={true}
+                          onDragStart={(e) => {
+                            e.dataTransfer.setData('application/json', JSON.stringify(product));
+                          }}
+                          className="h-full group overflow-hidden border-0 shadow-md hover:shadow-2xl transition-all duration-300 rounded-2xl bg-white flex flex-col cursor-grab active:cursor-grabbing"
+                        >
+                          <div className="relative aspect-square overflow-hidden bg-slate-100">
                           <Link href={`/site/products/${product.productId}`}>
                             <img
                               src={getImageUrl(product.image)}
@@ -325,7 +361,7 @@ export default function ProductsPage() {
                           </Link>
                           
                           <CardDescription className="line-clamp-2 text-slate-500 text-sm mb-4">
-                            {product.description || 'Chưa có mô tả chi tiết'}
+                            {product.productDescription || 'Chưa có mô tả chi tiết'}
                           </CardDescription>
 
                           <div className="mt-auto pt-4 border-t border-slate-100 flex items-center justify-between">
@@ -346,16 +382,8 @@ export default function ProductsPage() {
                   );
                 })}
               </motion.div>
-            ) : (
-              <div className="text-center py-24 bg-white rounded-3xl border border-slate-100 shadow-sm">
-                <Box className="w-16 h-16 text-slate-300 mx-auto mb-4" />
-                <h3 className="text-2xl font-bold text-slate-800 mb-2">Không tìm thấy sản phẩm</h3>
-                <p className="text-slate-500">Thử thay đổi bộ lọc hoặc từ khóa tìm kiếm của bạn.</p>
-                <Button onClick={() => { setQuery(''); setCategory('all'); setIsFilterOrSortChanged(true); }} variant="outline" className="mt-6 rounded-full">
-                  Xóa bộ lọc
-                </Button>
-              </div>
-            )}
+              )}
+            </AnimatePresence>
 
             {/* Pagination */}
             {totalPages > 1 && !loading && products.length > 0 && (
@@ -405,5 +433,13 @@ export default function ProductsPage() {
         )}
       </div>
     </div>
+  );
+}
+
+export default function ProductsPage() {
+  return (
+    <Suspense fallback={<div className='h-screen flex items-center justify-center text-slate-600'>Đang tải trang...</div>}>
+      <ProductsPageContent />
+    </Suspense>
   );
 }

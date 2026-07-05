@@ -2,7 +2,7 @@
 import { getImageUrl } from '@/lib/utils';
 
 
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, Suspense } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -40,7 +40,7 @@ interface OrderDTO {
   };
 }
 
-export default function OrderInformationPage() {
+function OrderInformationContent() {
   const { user, token } = useAuth();
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -232,5 +232,13 @@ export default function OrderInformationPage() {
         </Card>
       </div>
     </section>
+  );
+}
+
+export default function OrderInformationPage() {
+  return (
+    <Suspense fallback={<div className='h-screen flex items-center justify-center text-slate-600'>Đang tải trang...</div>}>
+      <OrderInformationContent />
+    </Suspense>
   );
 }

@@ -1,10 +1,10 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, Suspense } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
 import { CheckCircle, ArrowRight } from 'lucide-react';
 
-export default function SuccessPage() {
+function SuccessPageContent() {
   const searchParams = useSearchParams();
   const router = useRouter();
   const sessionId = searchParams.get('session_id');
@@ -82,5 +82,13 @@ export default function SuccessPage() {
         <div className='absolute -bottom-16 -left-16 w-32 h-32 bg-green-50 rounded-full blur-2xl opacity-60' />
       </div>
     </section>
+  );
+}
+
+export default function SuccessPage() {
+  return (
+    <Suspense fallback={<div className='h-screen flex items-center justify-center text-slate-600'>Đang tải trang...</div>}>
+      <SuccessPageContent />
+    </Suspense>
   );
 }

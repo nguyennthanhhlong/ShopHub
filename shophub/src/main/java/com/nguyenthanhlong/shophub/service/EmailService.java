@@ -1,48 +1,37 @@
 package com.nguyenthanhlong.shophub.service;
 
 import com.nguyenthanhlong.shophub.payloads.OrderDTO;
-import jakarta.mail.MessagingException;
-import jakarta.mail.internet.MimeMessage;
-import org.springframework.mail.javamail.JavaMailSender;
-import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.stereotype.Service;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.web.client.RestTemplate;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpEntity;
+import org.springframework.http.ResponseEntity;
+
+import java.util.Map;
+import java.util.List;
+import java.util.HashMap;
 
 @Service
 public class EmailService {
 
-    private final JavaMailSender mailSender;
-
-    @org.springframework.beans.factory.annotation.Value("${spring.mail.username}")
+    @Value("${spring.mail.username:}")
     private String fromEmail;
 
-    public EmailService(JavaMailSender mailSender) {
-        this.mailSender = mailSender;
-    }
+    @Value("${SENDGRID_API_KEY:}")
+    private String sendGridApiKey;
+
+    private final RestTemplate restTemplate = new RestTemplate();
 
     public void sendOrderConfirmationEmail(String toEmail, OrderDTO orderDTO) {
-        try {
-            MimeMessage message = mailSender.createMimeMessage();
-            MimeMessageHelper helper = new MimeMessageHelper(message, true, "UTF-8");
-
-            helper.setFrom(fromEmail);
-            helper.setTo(toEmail);
-            helper.setSubject("Xác nhận đơn hàng #" + orderDTO.getOrderId() + " từ ShopHub");
-
-            String htmlContent = buildEmailContent(orderDTO);
-            helper.setText(htmlContent, true);
-
-            mailSender.send(message);
-            System.out.println("Email sent successfully to: " + toEmail);
-        } catch (Exception e) {
-            System.err.println("Failed to send email to: " + toEmail);
-            e.printStackTrace();
-        }
+        String subject = "Xác nhận đơn hàng #" + orderDTO.getOrderId() + " từ ShopHub";
+        String htmlContent = buildEmailContent(orderDTO);
+        sendEmailViaSendGrid(toEmail, subject, htmlContent);
     }
 
     private String buildEmailContent(OrderDTO orderDTO) {
         StringBuilder sb = new StringBuilder();
-        sb.append(
-                "<div style='font-family: Arial, sans-serif; max-width: 600px; margin: auto; padding: 20px; border: 1px solid #ddd; border-radius: 10px;'>");
+        sb.append("<div style='font-family: Arial, sans-serif; max-width: 600px; margin: auto; padding: 20px; border: 1px solid #ddd; border-radius: 10px;'>");
         sb.append("<h2 style='color: #4CAF50; text-align: center;'>Cảm ơn bạn đã mua sắm tại ShopHub!</h2>");
         sb.append("<p>Chào bạn,</p>");
         sb.append("<p>Đơn hàng <strong>#").append(orderDTO.getOrderId())
@@ -59,8 +48,7 @@ public class EmailService {
 
         sb.append("<h3>Danh sách sản phẩm</h3>");
         sb.append("<table style='width: 100%; border-collapse: collapse;'>");
-        sb.append(
-                "<tr style='background-color: #f9f9f9;'><th style='padding: 8px; border: 1px solid #ddd;'>Sản phẩm</th><th style='padding: 8px; border: 1px solid #ddd;'>Giá</th></tr>");
+        sb.append("<tr style='background-color: #f9f9f9;'><th style='padding: 8px; border: 1px solid #ddd;'>Sản phẩm</th><th style='padding: 8px; border: 1px solid #ddd;'>Giá</th></tr>");
 
         if (orderDTO.getOrderItems() != null) {
             orderDTO.getOrderItems().forEach(item -> {
@@ -75,7 +63,6 @@ public class EmailService {
         }
 
         sb.append("</table>");
-
         sb.append("<p style='margin-top: 20px;'>Mọi thắc mắc vui lòng liên hệ email hỗ trợ của chúng tôi.</p>");
         sb.append("<p>Trân trọng,<br/><strong>Đội ngũ ShopHub</strong></p>");
         sb.append("</div>");
@@ -84,29 +71,45 @@ public class EmailService {
     }
 
     public void sendPasswordResetEmail(String toEmail, String newPassword) {
+        String subject = "Khôi phục mật khẩu từ ShopHub";
+        String htmlContent = "<div style='font-family: Arial, sans-serif; max-width: 600px; margin: auto; padding: 20px; border: 1px solid #ddd; border-radius: 10px;'>" +
+                "<h2 style='color: #4CAF50; text-align: center;'>Khôi phục mật khẩu ShopHub</h2>" +
+                "<p>Chào bạn,</p>" +
+                "<p>Mật khẩu mới của bạn là: <strong>" + newPassword + "</strong></p>" +
+                "<p>Vui lòng đăng nhập và đổi mật khẩu để đảm bảo an toàn.</p>" +
+                "<p>Trân trọng,<br/><strong>Đội ngũ ShopHub</strong></p>" +
+                "</div>";
+        sendEmailViaSendGrid(toEmail, subject, htmlContent);
+    }
+
+    private void sendEmailViaSendGrid(String toEmail, String subject, String htmlContent) {
+        if (sendGridApiKey == null || sendGridApiKey.isEmpty()) {
+            System.err.println("SENDGRID_API_KEY is missing. Email not sent to " + toEmail);
+            return;
+        }
+
+        String url = "https://api.sendgrid.com/v3/mail/send";
+        Map<String, Object> body = new HashMap<>();
+
+        Map<String, Object> personalization = new HashMap<>();
+        personalization.put("to", List.of(Map.of("email", toEmail)));
+        personalization.put("subject", subject);
+
+        body.put("personalizations", List.of(personalization));
+        body.put("from", Map.of("email", fromEmail, "name", "ShopHub"));
+        body.put("content", List.of(Map.of("type", "text/html", "value", htmlContent)));
+
+        HttpHeaders headers = new HttpHeaders();
+        headers.set("Authorization", "Bearer " + sendGridApiKey);
+        headers.set("Content-Type", "application/json");
+
+        HttpEntity<Map<String, Object>> request = new HttpEntity<>(body, headers);
+
         try {
-            MimeMessage message = mailSender.createMimeMessage();
-            MimeMessageHelper helper = new MimeMessageHelper(message, true, "UTF-8");
-
-            helper.setFrom(fromEmail);
-            helper.setTo(toEmail);
-            helper.setSubject("Khôi phục mật khẩu từ ShopHub");
-
-            String htmlContent = "<div style='font-family: Arial, sans-serif; max-width: 600px; margin: auto; padding: 20px; border: 1px solid #ddd; border-radius: 10px;'>" +
-                    "<h2 style='color: #4CAF50; text-align: center;'>Khôi phục mật khẩu ShopHub</h2>" +
-                    "<p>Chào bạn,</p>" +
-                    "<p>Mật khẩu mới của bạn là: <strong>" + newPassword + "</strong></p>" +
-                    "<p>Vui lòng đăng nhập và đổi mật khẩu để đảm bảo an toàn.</p>" +
-                    "<p>Trân trọng,<br/><strong>Đội ngũ ShopHub</strong></p>" +
-                    "</div>";
-            helper.setText(htmlContent, true);
-
-            mailSender.send(message);
-            System.out.println("Email reset password sent successfully to: " + toEmail);
+            ResponseEntity<String> response = restTemplate.postForEntity(url, request, String.class);
+            System.out.println("Email sent successfully via SendGrid! Status: " + response.getStatusCode());
         } catch (Exception e) {
-            System.err.println("Failed to send reset password email to: " + toEmail);
-            e.printStackTrace();
+            System.err.println("Failed to send email via SendGrid: " + e.getMessage());
         }
     }
 }
-

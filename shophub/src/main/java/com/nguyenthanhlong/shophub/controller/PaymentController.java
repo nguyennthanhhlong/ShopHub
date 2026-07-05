@@ -15,10 +15,14 @@ import org.springframework.web.servlet.view.RedirectView;
 
 import java.util.HashMap;
 import java.util.Map;
+import org.springframework.beans.factory.annotation.Value;
 
 @RestController
 @RequestMapping("/api/public/payment")
 public class PaymentController {
+
+    @Value("${FRONTEND_URL:http://localhost:3000}")
+    private String frontendBaseUrl;
 
     private final VNPAYService vnpayService;
     private final OrderRepo orderRepo;
@@ -53,7 +57,7 @@ public class PaymentController {
 
     @GetMapping("/vnpay_return")
     public RedirectView vnpayReturn(@RequestParam Map<String, String> params) {
-        String frontendUrl = "http://localhost:3000/site/vnpay-return";
+        String frontendUrl = frontendBaseUrl + "/site/vnpay-return";
 
         try {
             boolean isValid = vnpayService.verifyPayment(params);

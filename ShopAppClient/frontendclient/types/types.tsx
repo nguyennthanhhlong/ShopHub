@@ -8,6 +8,7 @@ export type Product = {
   discount: number;
   specialPrice: number;
   categoryId: number;
+  category?: Category;
 };
 
 export type ProductResponse = {

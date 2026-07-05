@@ -25,7 +25,7 @@ public class SwaggerConfig {
                                                                 .email("nguyenlong@hitu.edu.vn"))
                                 .license(new License().name("License").url("/")))
                                 .externalDocs(new ExternalDocumentation().description("E-Commerce App Documentation")
-                                                .url("http://localhost:8080/swagger-ui/index.html"));
+                                                .url("/swagger-ui/index.html"));
         }
 
 }

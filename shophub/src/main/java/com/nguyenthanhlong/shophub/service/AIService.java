@@ -85,7 +85,7 @@ public class AIService {
                 // 4. Tạo prompt tổng hợp
                 String systemPrompt = "Bạn là trợ lý tư vấn bán hàng online thông minh của ShopHub.\n" +
                                 "QUY TẮC QUAN TRỌNG NHẤT:\n" +
-                                "1. Hãy trình bày nội dung bằng Markdown đẹp mắt (dùng bảng biểu để so sánh). ĐẶC BIỆT chú ý: với cột Hình ảnh trong bảng, BẮT BUỘC dùng cú pháp: ![Tên SP](http://localhost:8080/api/public/products/image/I) trong đó I là tên file ảnh (image) của sản phẩm.\n"
+                                "1. Hãy trình bày nội dung bằng Markdown đẹp mắt (dùng bảng biểu để so sánh). ĐẶC BIỆT chú ý: với cột Hình ảnh trong bảng, BẮT BUỘC dùng cú pháp: ![Tên SP](I) trong đó I là link ảnh (image) của sản phẩm.\n"
                                 +
                                 "2. Khi khách hỏi xem sản phẩm hoặc danh mục, HÃY tư vấn bình thường và BẮT BUỘC thêm chuỗi JSON chứa các sản phẩm bạn vừa giới thiệu vào cuối câu trả lời:\n"
                                 +

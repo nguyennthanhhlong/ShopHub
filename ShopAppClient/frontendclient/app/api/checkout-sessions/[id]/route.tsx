@@ -8,10 +8,11 @@ const stripe = new Stripe(process.env.STRIPE_SECRET_KEY as string, {
 
 export async function GET(
   request: Request,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
-  console.log('🪪 Received params:', params);
-  const { id } = params;
+  const resolvedParams = await params;
+  console.log('🪪 Received params:', resolvedParams);
+  const { id } = resolvedParams;
 
   try {
     const session = await stripe.checkout.sessions.retrieve(id, {

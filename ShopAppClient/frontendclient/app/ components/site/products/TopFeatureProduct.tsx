@@ -129,7 +129,7 @@ export default function ProductListAndSearch() {
               const hasDiscount = product.discount > 0;
               const discountPercent = product.discount || 0;
               const finalPrice = hasDiscount ? product.price * (1 - discountPercent / 100) : product.price;
-              const { badgeText, badgeColor } = computeBadge(0);
+              const { badgeText, badgeColor } = computeBadge(product);
 
               return (
                 <motion.div

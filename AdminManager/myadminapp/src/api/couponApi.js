@@ -1,6 +1,6 @@
 import axios from "axios";
 
-const API_URL = "http://localhost:8080/api/admin/coupons";
+const API_URL = `${import.meta.env.VITE_API_URL || "/api"}/admin/coupons`;
 
 // Helper function to get the auth token
 const getAuthHeaders = () => {

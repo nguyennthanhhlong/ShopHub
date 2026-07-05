@@ -1,4 +1,6 @@
 'use client';
+import { getImageUrl } from '@/lib/utils';
+
 
 import { addToCart } from '@/app/utils/cartUtils';
 import { computeBadge } from '@/app/utils/reviewBadgeStar';
@@ -147,7 +149,7 @@ export default function ProductListAndSearch() {
                     <div className='relative aspect-square overflow-hidden bg-slate-100'>
                       <Link href={`/site/products/${product.productId}`}>
                         <img
-                          src={`http://localhost:8080/api/public/products/image/${product.image}`}
+                          src={getImageUrl(product.image)}
                           alt={product.productName}
                           className='h-full w-full object-cover group-hover:scale-105 transition-transform duration-500 ease-out'
                           onError={(e: any) => { e.target.src = '/placeholder.png' }}

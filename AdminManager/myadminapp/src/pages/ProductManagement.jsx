@@ -4,6 +4,13 @@ import axiosClient from '../api/axiosClient';
 import toast from 'react-hot-toast';
 import ConfirmModal from '../components/common/ConfirmModal';
 
+const getImageUrl = (imageName) => {
+  if (!imageName || imageName === 'default.png') return 'https://via.placeholder.com/40';
+  if (imageName.startsWith('http')) return imageName;
+  const apiUrl = import.meta.env.VITE_API_URL || '/api';
+  return `${apiUrl}/public/products/image/${imageName}`;
+};
+
 export default function ProductManagement() {
   const [products, setProducts] = useState([]);
   const [categories, setCategories] = useState([]);
@@ -251,7 +258,7 @@ export default function ProductManagement() {
                       <div className="flex items-center">
                         <img 
                           className="h-10 w-10 rounded-md object-cover bg-gray-100 shadow-sm" 
-                          src={product.image && product.image !== 'default.png' ? `/api/public/products/image/${product.image}` : 'https://via.placeholder.com/40'} 
+                          src={getImageUrl(product.image)} 
                           alt="" 
                         />
                         <div className="ml-4">

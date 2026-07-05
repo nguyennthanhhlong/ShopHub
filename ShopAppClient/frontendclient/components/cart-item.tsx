@@ -1,4 +1,6 @@
 'use client';
+import { getImageUrl } from '@/lib/utils';
+
 
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
@@ -41,7 +43,7 @@ export function CartItem({ item, onUpdateQuantity, onRemove }: CartItemProps) {
         <div className='w-full sm:w-32 h-32 flex-shrink-0 bg-slate-100 rounded-xl overflow-hidden relative'>
           <Link href={`/site/products/${product.productId}`}>
             <img
-              src={`http://localhost:8080/api/public/products/image/${product.image}`}
+              src={getImageUrl(product.image)}
               alt={product.productName}
               className='w-full h-full object-cover hover:scale-110 transition-transform duration-500'
               onError={(e: any) => { e.target.src = 'https://placehold.co/150x150/e2e8f0/94a3b8?text=No+Image' }}

@@ -1,4 +1,6 @@
 'use client';
+import { getImageUrl } from '@/lib/utils';
+
 
 import { useState, useEffect, useRef } from 'react';
 import { Search, X, Loader2 } from 'lucide-react';
@@ -102,7 +104,7 @@ export function SearchBar({ onSearch }: SearchBarProps) {
                   >
                     <div className='flex items-center gap-3 p-3 hover:bg-slate-50 border-b border-slate-100 last:border-0 transition-colors'>
                       <img 
-                        src={`http://localhost:8080/api/public/products/image/${product.image}`}
+                        src={getImageUrl(product.image)}
                         alt={product.productName}
                         className='w-12 h-12 object-cover rounded-md flex-shrink-0'
                       />

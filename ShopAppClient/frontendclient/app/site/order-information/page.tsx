@@ -1,4 +1,6 @@
 'use client';
+import { getImageUrl } from '@/lib/utils';
+
 
 import React, { useEffect, useState } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
@@ -56,7 +58,7 @@ export default function OrderInformationPage() {
     async function fetchOrder() {
       try {
         const res = await fetch(
-          `http://localhost:8080/api/public/users/${email}/orders/${orderId}`,
+          `${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8080/api'}/public/users/${email}/orders/${orderId}`,
           {
             headers: {
               Authorization: `Bearer ${localStorage.getItem('token')}`,
@@ -187,7 +189,7 @@ export default function OrderInformationPage() {
                 >
                   <div className='flex items-center gap-3'>
                     <img
-                      src={`http://localhost:8080/api/public/products/image/${item.product.image}`}
+                      src={getImageUrl(item.product.image)}
                       alt={item.product.productName}
                       className='w-12 h-12 rounded-md object-cover border'
                     />

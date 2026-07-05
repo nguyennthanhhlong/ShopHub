@@ -1,4 +1,6 @@
 'use client';
+import { getImageUrl } from '@/lib/utils';
+
 
 import { useEffect, useMemo, useState } from 'react';
 import { Button } from '@/components/ui/button';
@@ -190,7 +192,7 @@ export default function Header() {
                           className='flex items-center gap-4 mb-3 p-2 shadow-sm'
                         >
                           <img
-                            src={`http://localhost:8080/api/public/products/image/${item.image}`}
+                            src={getImageUrl(item.image)}
                             alt={item.name}
                             className='w-12 h-12 object-cover rounded-md border border-slate-100'
                           />

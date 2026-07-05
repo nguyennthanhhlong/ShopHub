@@ -27,7 +27,7 @@ export default function Testimonials() {
     const fetchTestimonials = async () => {
       try {
         setLoading(true);
-        const response = await axios.get('http://localhost:8080/api/public/testimonials');
+        const response = await axios.get(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8080/api'}/public/testimonials`);
         if (response.data && Array.isArray(response.data)) {
           const dataWithInitials = response.data.map((item: any) => {
             const names = item.name ? item.name.split(' ') : ['U'];

@@ -1,4 +1,6 @@
 'use client';
+import { getImageUrl } from '@/lib/utils';
+
 
 import { useState, useEffect, useRef } from 'react';
 import { askAI } from '@/services/chatService';
@@ -527,7 +529,7 @@ export default function FloatingChatBox() {
                               <div className="mt-2 flex flex-col gap-1.5">
                                 {m.attachedProducts.map((p, idx) => (
                                   <div key={idx} className="flex items-center gap-2 bg-white/20 rounded-md p-1.5 pr-3">
-                                    {p.image && <img src={`http://localhost:8080/api/public/products/image/${p.image}`} alt={p.productName} className="w-6 h-6 object-cover rounded bg-white" />}
+                                    {p.image && <img src={getImageUrl(p.image)} alt={p.productName} className="w-6 h-6 object-cover rounded bg-white" />}
                                     <span className="text-xs font-medium line-clamp-1">{p.productName}</span>
                                   </div>
                                 ))}
@@ -550,7 +552,7 @@ export default function FloatingChatBox() {
                                     transition={{ type: "spring", stiffness: 300, damping: 20, delay: idx * 0.1 }}
                                     className="text-sm font-medium text-slate-800 flex items-center gap-3 bg-white p-2 rounded-lg border border-slate-100 shadow-sm"
                                   >
-                                    {intent.image && <img src={`http://localhost:8080/api/public/products/image/${intent.image}`} alt={intent.productName} className="w-12 h-12 object-cover rounded-md border border-slate-200" />}
+                                    {intent.image && <img src={getImageUrl(intent.image)} alt={intent.productName} className="w-12 h-12 object-cover rounded-md border border-slate-200" />}
                                     <div className="flex flex-col flex-1">
                                       <span className="line-clamp-1">{intent.productName}</span>
                                       <span className="text-xs text-slate-500 font-normal">Số lượng: {intent.quantity}</span>
@@ -582,7 +584,7 @@ export default function FloatingChatBox() {
                                     className="bg-white p-2.5 rounded-xl border border-slate-200 shadow-sm hover:shadow transition-shadow flex flex-col gap-2"
                                   >
                                     <div className="flex gap-3 items-start">
-                                      {p.image && <img src={`http://localhost:8080/api/public/products/image/${p.image}`} alt={p.productName} className="w-14 h-14 object-cover rounded-md border border-slate-100 flex-shrink-0" />}
+                                      {p.image && <img src={getImageUrl(p.image)} alt={p.productName} className="w-14 h-14 object-cover rounded-md border border-slate-100 flex-shrink-0" />}
                                       <div className="flex flex-col flex-1 min-w-0">
                                         <span className="font-medium text-slate-800 text-sm line-clamp-1">{p.productName}</span>
                                         <span className="text-sm font-semibold text-slate-900">
@@ -703,7 +705,7 @@ export default function FloatingChatBox() {
                     <div className="mb-2 flex gap-2 overflow-x-auto pb-1 custom-scrollbar">
                       {attachedProducts.map((p, idx) => (
                         <div key={idx} className="relative flex-shrink-0 bg-white border border-slate-200 rounded-lg p-1.5 flex items-center gap-2 shadow-sm pr-6 group">
-                          {p.image && <img src={`http://localhost:8080/api/public/products/image/${p.image}`} alt={p.productName} className="w-8 h-8 object-cover rounded border border-slate-100" />}
+                          {p.image && <img src={getImageUrl(p.image)} alt={p.productName} className="w-8 h-8 object-cover rounded border border-slate-100" />}
                           <div className="flex flex-col max-w-[120px]">
                             <span className="text-[10px] font-medium text-slate-700 line-clamp-1">{p.productName}</span>
                             <span className="text-[10px] text-slate-900 font-semibold">${p.specialPrice || p.price}</span>

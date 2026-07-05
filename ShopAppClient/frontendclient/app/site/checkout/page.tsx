@@ -1,4 +1,6 @@
 'use client';
+import { getImageUrl } from '@/lib/utils';
+
 
 import React, { useState, useEffect, useMemo, useRef, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
@@ -113,7 +115,7 @@ function CheckoutContent() {
     for (const item of cartItems) {
       const productId = item.product.productId;
       const quantity = item.quantity;
-      const apiEndpoint = `http://localhost:8080/api/public/carts/${cartId}/products/${productId}/quantity/${quantity}`;
+      const apiEndpoint = `${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8080/api'}/public/carts/${cartId}/products/${productId}/quantity/${quantity}`;
       const response = await fetch(apiEndpoint, {
         method: 'POST',
         headers: {
@@ -127,7 +129,7 @@ function CheckoutContent() {
       }
     }
     const res = await fetch(
-      `http://localhost:8080/api/public/users/${user.email}/carts/${cartId}`,
+      `${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8080/api'}/public/users/${user.email}/carts/${cartId}`,
       { headers: { Authorization: `Bearer ${localStorage.getItem('token')}` } }
     );
     if (!res.ok) throw new Error('Failed to fetch cart from backend');
@@ -140,7 +142,7 @@ function CheckoutContent() {
     setCouponError('');
     setCouponSuccess('');
     try {
-      const res = await fetch(`http://localhost:8080/api/public/coupons/${couponInput.trim().toUpperCase()}`);
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8080/api'}/public/coupons/${couponInput.trim().toUpperCase()}`);
       if (!res.ok) {
         throw new Error('Mã giảm giá không hợp lệ hoặc đã hết hạn.');
       }
@@ -182,7 +184,7 @@ function CheckoutContent() {
 
     try {
       await syncCartWithBackend(cartId, cartItems, token);
-      const orderApi = `http://localhost:8080/api/public/users/${user.email}/carts/${cartId}/payments/${paymentMethod}/order${appliedCoupon ? `?couponCode=${appliedCoupon.code}` : ''}`;
+      const orderApi = `${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8080/api'}/public/users/${user.email}/carts/${cartId}/payments/${paymentMethod}/order${appliedCoupon ? `?couponCode=${appliedCoupon.code}` : ''}`;
       
       const response = await fetch(orderApi, {
         method: 'POST',
@@ -199,7 +201,7 @@ function CheckoutContent() {
       window.dispatchEvent(new Event('cartUpdated'));
 
       if (paymentMethod === 'vnpay') {
-        const vnpayRes = await fetch(`http://localhost:8080/api/public/payment/create_vnpay?orderId=${result.orderId}`, {
+        const vnpayRes = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8080/api'}/public/payment/create_vnpay?orderId=${result.orderId}`, {
            headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
         });
         if (vnpayRes.ok) {
@@ -228,7 +230,7 @@ function CheckoutContent() {
       const applyCouponFromUrl = async () => {
         setIsApplyingCoupon(true);
         try {
-          const res = await fetch(`http://localhost:8080/api/public/coupons/${autoCoupon.trim().toUpperCase()}`);
+          const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8080/api'}/public/coupons/${autoCoupon.trim().toUpperCase()}`);
           if (res.ok) {
             const data = await res.json();
             setAppliedCoupon(data);
@@ -380,7 +382,7 @@ function CheckoutContent() {
                   return (
                     <div key={p.productId} className='flex items-center gap-4 bg-slate-50 p-3 rounded-2xl border border-slate-100'>
                       <img
-                        src={`http://localhost:8080/api/public/products/image/${p.image}`}
+                        src={getImageUrl(p.image)}
                         alt={p.productName}
                         className='w-16 h-16 rounded-xl object-cover bg-white shadow-sm'
                         onError={(e: any) => { e.target.src = '/placeholder.png' }}

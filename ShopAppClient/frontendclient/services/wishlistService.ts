@@ -1,7 +1,7 @@
 import axios from 'axios';
 import { Product } from '@/types/types';
 
-const API_BASE_URL = 'http://localhost:8080/api';
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8080/api';
 
 export const getUserWishlist = async (email: string, token: string) => {
   return await axios.get<Product[]>(`${API_BASE_URL}/user/wishlist?email=${email}`, {

@@ -64,7 +64,7 @@ export default function LoginPage() {
     const checkUser = async () => {
       try {
         const res = await fetch(
-          `http://localhost:8080/api/public/users/email/${email}`
+          `${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8080/api'}/public/users/email/${email}`
         );
 
         if (res.status === 404) {

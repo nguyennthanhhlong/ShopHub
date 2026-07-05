@@ -42,7 +42,7 @@ export default function BannerSlider() {
   useEffect(() => {
     const fetchBanners = async () => {
       try {
-        const response = await axios.get('http://localhost:8080/api/public/banners/section/DISCOVER_SLIDER');
+        const response = await axios.get(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8080/api'}/public/banners/section/DISCOVER_SLIDER`);
         if (response.data && response.data.length > 0) {
           setBanners(response.data);
         }

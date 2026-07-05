@@ -1,4 +1,6 @@
 'use client';
+import { getImageUrl } from '@/lib/utils';
+
 
 import React, { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
@@ -114,7 +116,7 @@ export default function WishlistPage() {
                       <div className="relative aspect-square overflow-hidden bg-slate-100">
                         <Link href={`/site/products/${product.productId}`}>
                           <img
-                            src={`http://localhost:8080/api/public/products/image/${product.image}`}
+                            src={getImageUrl(product.image)}
                             alt={product.productName}
                             className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
                             onError={(e: any) => { e.target.src = '/placeholder.png' }}

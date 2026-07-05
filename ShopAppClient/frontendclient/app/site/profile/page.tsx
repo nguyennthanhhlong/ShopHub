@@ -1,4 +1,6 @@
 'use client';
+import { getImageUrl } from '@/lib/utils';
+
 
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
@@ -149,7 +151,7 @@ export default function ProfilePage() {
   const fetchOrders = async () => {
     try {
       setLoadingOrders(true);
-      const res = await fetch(`http://localhost:8080/api/public/users/${user.email}/orders`, {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8080/api'}/public/users/${user.email}/orders`, {
         headers: { Authorization: `Bearer ${localStorage.getItem('token')}` },
       });
       if (res.ok) {
@@ -392,7 +394,7 @@ export default function ProfilePage() {
                                   <div key={i} className="flex justify-between items-center bg-slate-50 p-3 rounded-xl">
                                     <div className="flex items-center gap-3">
                                       <div className="w-12 h-12 bg-white rounded-lg shadow-sm flex items-center justify-center border border-slate-100 overflow-hidden">
-                                        <img src={`http://localhost:8080/api/public/products/image/${item.product.image}`} alt={item.product.productName} className="w-full h-full object-cover" onError={(e: any) => { e.target.src = '/placeholder.png' }} />
+                                        <img src={getImageUrl(item.product.image)} alt={item.product.productName} className="w-full h-full object-cover" onError={(e: any) => { e.target.src = '/placeholder.png' }} />
                                       </div>
                                       <div>
                                         <p className="font-semibold text-slate-800">{item.product.productName}</p>

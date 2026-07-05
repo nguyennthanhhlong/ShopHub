@@ -108,7 +108,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         throw new Error('Không tìm thấy email người dùng GitHub.');
 
       const res = await fetch(
-        `http://localhost:8080/api/public/users/email/${user.email}`,
+        `${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8080/api'}/public/users/email/${user.email}`,
         {
           method: 'PUT',
           headers: { 'Content-Type': 'application/json' },

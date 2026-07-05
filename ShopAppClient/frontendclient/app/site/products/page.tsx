@@ -1,4 +1,6 @@
 'use client';
+import { getImageUrl } from '@/lib/utils';
+
 
 import React, { useState, useMemo, useEffect, useCallback } from 'react';
 import { Badge } from '@/components/ui/badge';
@@ -72,7 +74,7 @@ export default function ProductsPage() {
       try {
         const [catData, headerData] = await Promise.all([
           getCategories(),
-          axios.get('http://localhost:8080/api/public/banners/section/PRODUCTS_HEADER').catch(() => null)
+          axios.get(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8080/api'}/public/banners/section/PRODUCTS_HEADER`).catch(() => null)
         ]);
         
         if (catData && Array.isArray(catData)) setAvailableCategories(catData);
@@ -261,7 +263,7 @@ export default function ProductsPage() {
                         <div className="relative aspect-square overflow-hidden bg-slate-100">
                           <Link href={`/site/products/${product.productId}`}>
                             <img
-                              src={`http://localhost:8080/api/public/products/image/${product.image}`}
+                              src={getImageUrl(product.image)}
                               alt={product.productName}
                               className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
                               onError={(e: any) => { e.target.src = '/placeholder.png' }}

@@ -1,6 +1,6 @@
 import axiosClient from '@/libraryService/axiosClient';
 
-const BASE_URL = 'http://localhost:8080/api';
+const BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8080/api';
 
 export const register = async (userData: any) => {
   try {

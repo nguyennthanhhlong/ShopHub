@@ -1,4 +1,6 @@
 'use client';
+import { getImageUrl } from '@/lib/utils';
+
 
 import React, { useEffect, useState } from 'react';
 import { useAuth } from '@/context/authContext';
@@ -42,7 +44,7 @@ export default function OrdersPage() {
     async function fetchOrders() {
       try {
         const res = await fetch(
-          `http://localhost:8080/api/public/users/${user.email}/orders`,
+          `${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8080/api'}/public/users/${user.email}/orders`,
           {
             headers: { Authorization: `Bearer ${token}` },
           }
@@ -140,7 +142,7 @@ export default function OrdersPage() {
                   className='flex items-center gap-3 bg-slate-50 p-2 rounded-md border border-slate-100'
                 >
                   <img
-                    src={`http://localhost:8080/api/public/products/image/${item.product.image}`}
+                    src={getImageUrl(item.product.image)}
                     alt={item.product.productName}
                     className='w-12 h-12 rounded-md object-cover border'
                   />

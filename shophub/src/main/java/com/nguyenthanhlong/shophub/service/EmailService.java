@@ -50,14 +50,27 @@ public class EmailService {
         sb.append("<h3>Danh sách sản phẩm</h3>");
         sb.append("<table style='width: 100%; border-collapse: collapse;'>");
         sb.append(
-                "<tr style='background-color: #f9f9f9;'><th style='padding: 8px; border: 1px solid #ddd;'>Sản phẩm</th><th style='padding: 8px; border: 1px solid #ddd;'>Giá</th></tr>");
+                "<tr style='background-color: #f9f9f9;'><th style='padding: 8px; border: 1px solid #ddd;'>Hình ảnh</th><th style='padding: 8px; border: 1px solid #ddd;'>Sản phẩm</th><th style='padding: 8px; border: 1px solid #ddd;'>Giá</th></tr>");
 
         if (orderDTO.getOrderItems() != null) {
             orderDTO.getOrderItems().forEach(item -> {
                 sb.append("<tr>");
+                
+                // Cột Hình ảnh
+                sb.append("<td style='padding: 8px; border: 1px solid #ddd; text-align: center;'>");
+                if (item.getProduct().getImage() != null && !item.getProduct().getImage().isEmpty()) {
+                    sb.append("<img src='").append(item.getProduct().getImage())
+                      .append("' alt='").append(item.getProduct().getProductName())
+                      .append("' style='width: 60px; height: 60px; object-fit: cover; border-radius: 5px;'/>");
+                }
+                sb.append("</td>");
+
+                // Cột Tên sản phẩm
                 sb.append("<td style='padding: 8px; border: 1px solid #ddd;'>")
                         .append(item.getProduct().getProductName()).append(" (x").append(item.getQuantity())
                         .append(")</td>");
+                
+                // Cột Giá
                 sb.append("<td style='padding: 8px; border: 1px solid #ddd;'>$")
                         .append(item.getOrderedProductPrice() * item.getQuantity()).append("</td>");
                 sb.append("</tr>");

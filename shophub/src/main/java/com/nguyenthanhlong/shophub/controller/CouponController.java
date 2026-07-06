@@ -23,6 +23,12 @@ public class CouponController {
         return new ResponseEntity<>(coupon, HttpStatus.OK);
     }
 
+    @GetMapping("/public/coupons")
+    public ResponseEntity<List<Coupon>> getActiveCoupons() {
+        List<Coupon> coupons = couponService.getActiveCoupons();
+        return new ResponseEntity<>(coupons, HttpStatus.OK);
+    }
+
     // --- Admin Endpoints ---
 
     @GetMapping("/admin/coupons")

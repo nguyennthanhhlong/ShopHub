@@ -31,6 +31,7 @@ function CheckoutContent() {
   const [couponError, setCouponError] = useState('');
   const [couponSuccess, setCouponSuccess] = useState('');
   const [isApplyingCoupon, setIsApplyingCoupon] = useState(false);
+  const [availableCoupons, setAvailableCoupons] = useState<any[]>([]);
   const [isPlacingOrder, setIsPlacingOrder] = useState(false);
 
   const [form, setForm] = useState({
@@ -70,6 +71,17 @@ function CheckoutContent() {
         zip: user.address?.pincode || prev.zip,
       }));
     }
+
+    // Fetch available coupons
+    fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8080/api'}/public/coupons`)
+      .then(res => res.json())
+      .then(data => {
+         if (Array.isArray(data)) {
+           setAvailableCoupons(data);
+         }
+      })
+      .catch(err => console.error("Failed to fetch coupons", err));
+
     setIsLoading(false);
   }, [router, user]);
 
@@ -434,6 +446,26 @@ function CheckoutContent() {
                 </div>
                 {couponError && <p className="text-red-500 text-sm font-medium pt-1">{couponError}</p>}
                 {couponSuccess && <p className="text-emerald-600 text-sm font-bold pt-1">{couponSuccess}</p>}
+
+                {availableCoupons.length > 0 && !appliedCoupon && (
+                  <div className="mt-4 pt-4 border-t border-slate-200">
+                    <p className="text-xs text-slate-500 font-medium mb-2">🎁 Mã giảm giá dành cho bạn:</p>
+                    <div className="flex flex-wrap gap-2">
+                      {availableCoupons.map((coupon: any) => (
+                        <button
+                          key={coupon.couponId}
+                          type="button"
+                          onClick={() => setCouponInput(coupon.code)}
+                          className="px-3 py-1.5 bg-indigo-50 hover:bg-indigo-100 text-indigo-700 border border-indigo-200 rounded-lg text-xs font-bold transition-colors flex items-center gap-1"
+                          title="Bấm để dùng mã này"
+                        >
+                          <Ticket className="w-3 h-3" />
+                          {coupon.code} (-{coupon.discountPercent}%)
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                )}
               </div>
 
               <div className='space-y-4 mb-8 px-2'>

@@ -8,6 +8,8 @@ public interface CouponService {
 
     List<Coupon> getAllCoupons();
 
+    List<Coupon> getActiveCoupons();
+
     Coupon createCoupon(Coupon coupon);
 
     Coupon updateCoupon(Long id, Coupon coupon);

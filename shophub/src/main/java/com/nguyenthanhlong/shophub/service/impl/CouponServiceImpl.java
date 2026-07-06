@@ -60,6 +60,14 @@ public class CouponServiceImpl implements CouponService {
     }
 
     @Override
+    public List<Coupon> getActiveCoupons() {
+        return couponRepo.findAll().stream()
+                .filter(c -> Boolean.TRUE.equals(c.getIsActive()) && 
+                        (c.getExpiryDate() == null || c.getExpiryDate().isAfter(LocalDateTime.now())))
+                .collect(java.util.stream.Collectors.toList());
+    }
+
+    @Override
     public Coupon createCoupon(Coupon coupon) {
         if (coupon.getCode() != null) {
             coupon.setCode(coupon.getCode().toUpperCase());

@@ -104,6 +104,8 @@ export default function ProductManagement() {
     }
   };
 
+  const [imagePreview, setImagePreview] = useState(null);
+
   const openAddModal = () => {
     setModalMode('add');
     setCurrentProduct({
@@ -115,6 +117,7 @@ export default function ProductManagement() {
       categoryId: categories.length > 0 ? categories[0].categoryId : ''
     });
     setSelectedFile(null);
+    setImagePreview(null);
     setIsModalOpen(true);
   };
 
@@ -130,16 +133,20 @@ export default function ProductManagement() {
       categoryId: product.categoryId || ''
     });
     setSelectedFile(null);
+    setImagePreview(getImageUrl(product.image));
     setIsModalOpen(true);
   };
 
   const closeModal = () => {
     setIsModalOpen(false);
+    setImagePreview(null);
   };
 
   const handleFileChange = (e) => {
     if (e.target.files && e.target.files[0]) {
-      setSelectedFile(e.target.files[0]);
+      const file = e.target.files[0];
+      setSelectedFile(file);
+      setImagePreview(URL.createObjectURL(file));
     }
   };
 
@@ -189,27 +196,27 @@ export default function ProductManagement() {
   };
 
   return (
-    <>
+    <div className="animate-fade-in-up">
       <div className="flex justify-between items-center mb-6">
         <div>
-          <h1 className="text-2xl font-bold text-gray-800 tracking-tight">Products</h1>
-          <p className="text-sm text-gray-500 mt-1">Manage your product catalog</p>
+          <h1 className="text-3xl font-extrabold text-slate-900 tracking-tight">Products</h1>
+          <p className="text-sm text-slate-500 mt-1">Manage your product catalog</p>
         </div>
         <button 
           onClick={openAddModal}
-          className="bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-4 rounded-lg shadow-sm flex items-center transition-colors"
+          className="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2.5 px-5 rounded-xl shadow-lg hover:shadow-blue-500/30 hover:-translate-y-0.5 transition-all duration-300 flex items-center"
         >
           <Plus size={18} className="mr-2" />
           Add Product
         </button>
       </div>
 
-      <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
+      <div className="bg-white/80 backdrop-blur-xl rounded-2xl shadow-sm border border-slate-100/60 overflow-hidden relative">
         {/* Toolbar */}
-        <div className="p-4 border-b border-gray-100 flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-gray-50/50">
-          <div className="relative w-full sm:w-72">
-            <span className="absolute inset-y-0 left-0 pl-3 flex items-center">
-              <Search size={18} className="text-gray-400" />
+        <div className="p-5 border-b border-slate-100/60 flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-white/50">
+          <div className="relative w-full sm:w-96 group">
+            <span className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400 group-focus-within:text-blue-500 transition-colors">
+              <Search size={18} />
             </span>
             <input 
               type="text" 
@@ -219,7 +226,7 @@ export default function ProductManagement() {
                 setSearchQuery(e.target.value);
                 setCurrentPage(1);
               }}
-              className="w-full bg-white border border-gray-200 rounded-lg pl-10 pr-4 py-2 text-sm focus:border-blue-500 focus:ring-1 focus:ring-blue-500 outline-none transition-all"
+              className="w-full bg-slate-50/50 border border-slate-200 rounded-xl pl-10 pr-4 py-2.5 text-sm font-medium text-slate-800 placeholder-slate-400 focus:bg-white focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 outline-none transition-all duration-300"
             />
           </div>
         </div>
@@ -227,81 +234,87 @@ export default function ProductManagement() {
         {/* Table */}
         <div className="overflow-x-auto min-h-[400px]">
           {loading ? (
-            <div className="flex justify-center items-center h-64">
-              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
-            </div>
+             <div className="flex flex-col justify-center items-center h-64 text-blue-500">
+               <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-blue-600 mb-4"></div>
+               <p className="text-sm font-medium animate-pulse text-slate-500">Loading products...</p>
+             </div>
           ) : (
-            <table className="w-full text-left text-sm text-gray-600">
-              <thead className="bg-gray-50/80 text-xs uppercase text-gray-500 border-b border-gray-100 sticky top-0">
+            <table className="w-full text-left text-sm text-slate-600">
+              <thead className="bg-slate-50/80 text-xs font-semibold uppercase tracking-wider text-slate-500 border-b border-slate-100">
                 <tr>
-                  <th scope="col" className="px-6 py-4 font-semibold tracking-wider">Product</th>
-                  <th scope="col" className="px-6 py-4 font-semibold tracking-wider">Category</th>
-                  <th scope="col" className="px-6 py-4 font-semibold tracking-wider">Price</th>
-                  <th scope="col" className="px-6 py-4 font-semibold tracking-wider">Stock</th>
-                  <th scope="col" className="px-6 py-4 font-semibold tracking-wider text-right">Actions</th>
+                  <th scope="col" className="px-6 py-4">Product</th>
+                  <th scope="col" className="px-6 py-4">Category</th>
+                  <th scope="col" className="px-6 py-4 text-right">Price</th>
+                  <th scope="col" className="px-6 py-4 text-center">Stock</th>
+                  <th scope="col" className="px-6 py-4 text-right">Actions</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-gray-100">
+              <tbody className="divide-y divide-slate-100/80">
                 {products.length === 0 ? (
                   <tr>
-                    <td colSpan="5" className="px-6 py-12 text-center">
-                      <div className="flex flex-col items-center justify-center text-gray-400">
-                        <Inbox size={48} className="mb-4 opacity-50" />
-                        <p className="text-lg font-medium text-gray-600">No products found</p>
+                    <td colSpan="5" className="px-6 py-16 text-center">
+                      <div className="flex flex-col items-center justify-center text-slate-400">
+                        <div className="bg-slate-50 p-4 rounded-full mb-4">
+                          <Inbox size={48} className="text-slate-300" />
+                        </div>
+                        <p className="text-lg font-bold text-slate-700">No products found</p>
                         <p className="text-sm mt-1">Get started by adding a new product.</p>
                       </div>
                     </td>
                   </tr>
                 ) : products.map((product) => (
-                  <tr key={product.productId} className="hover:bg-blue-50/50 transition-colors group">
+                  <tr key={product.productId} className="hover:bg-slate-50/80 transition-colors group">
                     <td className="px-6 py-4 whitespace-nowrap">
                       <div className="flex items-center">
                         <img 
-                          className="h-10 w-10 rounded-md object-cover bg-gray-100 shadow-sm" 
+                          className="h-12 w-12 rounded-xl object-cover bg-slate-100 shadow-sm border border-slate-200" 
                           src={getImageUrl(product.image)} 
                           alt="" 
                         />
                         <div className="ml-4">
-                          <div className="text-sm font-semibold text-gray-900">{product.productName}</div>
-                          <div className="text-sm text-gray-500 truncate w-48" title={product.description || product.productDescription}>
+                          <div className="text-sm font-bold text-slate-900">{product.productName}</div>
+                          <div className="text-xs font-medium text-slate-500 truncate w-48 mt-0.5" title={product.description || product.productDescription}>
                             {product.description || product.productDescription}
                           </div>
                         </div>
                       </div>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
-                      <span className="px-2.5 py-1 inline-flex text-xs leading-5 font-semibold rounded-full bg-indigo-50 text-indigo-700 border border-indigo-100">
+                      <span className="px-3 py-1 inline-flex text-[11px] leading-5 font-bold uppercase rounded-full bg-indigo-50 text-indigo-600 border border-indigo-100">
                         {categories.find(c => c.categoryId === product.categoryId)?.categoryName || 'Uncategorized'}
                       </span>
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <div className="text-sm font-medium text-gray-900">${product.price?.toFixed(2) || '0.00'}</div>
-                      {/* {product.discount > 0 && (
-                        <div className="text-xs font-semibold text-green-600 mt-0.5">-{product.discount}% (${product.specialPrice?.toFixed(2)})</div>
-                      )} */}
+                    <td className="px-6 py-4 whitespace-nowrap text-right">
+                      <div className="text-sm font-bold text-slate-900">${product.price?.toFixed(2) || '0.00'}</div>
+                      {product.discount > 0 && (
+                        <div className="text-[10px] font-bold text-emerald-600 mt-0.5">-{product.discount}% OFF</div>
+                      )}
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <div className="text-sm font-medium text-gray-900">
-                        <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${product.quantity > 10 ? 'bg-green-100 text-green-800' : product.quantity > 0 ? 'bg-yellow-100 text-yellow-800' : 'bg-red-100 text-red-800'}`}>
+                    <td className="px-6 py-4 whitespace-nowrap text-center">
+                      <div className="text-sm font-medium text-slate-900">
+                        <span className={`inline-flex items-center px-2.5 py-1 rounded-full text-xs font-bold border ${product.quantity > 10 ? 'bg-emerald-50 text-emerald-600 border-emerald-200' : product.quantity > 0 ? 'bg-amber-50 text-amber-600 border-amber-200' : 'bg-rose-50 text-rose-600 border-rose-200'}`}>
                           {product.quantity} in stock
                         </span>
                       </div>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                      <button 
-                        onClick={() => openEditModal(product)}
-                        className="text-gray-400 hover:text-blue-600 mx-2 p-1.5 rounded-md hover:bg-blue-50 transition-colors opacity-0 group-hover:opacity-100" 
-                        title="Edit"
-                      >
-                        <Edit2 size={16} />
-                      </button>
-                      <button 
-                        onClick={() => handleDelete(product.productId)} 
-                        className="text-gray-400 hover:text-red-600 p-1.5 rounded-md hover:bg-red-50 transition-colors opacity-0 group-hover:opacity-100" 
-                        title="Delete"
-                      >
-                        <Trash2 size={16} />
-                      </button>
+                      <div className="flex justify-end items-center gap-2">
+                        <button 
+                          onClick={() => openEditModal(product)}
+                          className="flex items-center gap-1.5 text-slate-500 hover:text-blue-600 bg-white border border-slate-200 hover:border-blue-200 px-3 py-1.5 rounded-lg shadow-sm hover:bg-blue-50 transition-all opacity-0 group-hover:opacity-100" 
+                          title="Edit"
+                        >
+                          <Edit2 size={16} />
+                          <span className="text-xs font-semibold">Edit</span>
+                        </button>
+                        <button 
+                          onClick={() => handleDelete(product.productId)} 
+                          className="flex items-center gap-1.5 text-slate-500 hover:text-rose-600 bg-white border border-slate-200 hover:border-rose-200 px-3 py-1.5 rounded-lg shadow-sm hover:bg-rose-50 transition-all opacity-0 group-hover:opacity-100" 
+                          title="Delete"
+                        >
+                          <Trash2 size={16} />
+                        </button>
+                      </div>
                     </td>
                   </tr>
                 ))}
@@ -312,22 +325,22 @@ export default function ProductManagement() {
 
         {/* Pagination */}
         {!loading && products.length > 0 && (
-          <div className="px-6 py-4 border-t border-gray-100 flex items-center justify-between bg-gray-50/30">
-            <div className="text-sm text-gray-500">
-              Page <span className="font-medium text-gray-900">{currentPage}</span> of <span className="font-medium text-gray-900">{totalPages}</span>
+          <div className="px-6 py-4 border-t border-slate-100 flex items-center justify-between bg-slate-50/50">
+            <div className="text-sm text-slate-500 font-medium">
+              Page <span className="text-slate-900 font-bold">{currentPage}</span> of <span className="text-slate-900 font-bold">{totalPages}</span>
             </div>
             <div className="flex space-x-2">
               <button
                 onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
                 disabled={currentPage === 1}
-                className="p-1.5 rounded-md border border-gray-200 bg-white text-gray-500 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                className="p-2 rounded-lg border border-slate-200 bg-white text-slate-600 hover:bg-slate-50 hover:text-blue-600 disabled:opacity-50 disabled:cursor-not-allowed transition-colors shadow-sm"
               >
                 <ChevronLeft size={18} />
               </button>
               <button
                 onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
                 disabled={currentPage === totalPages}
-                className="p-1.5 rounded-md border border-gray-200 bg-white text-gray-500 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                className="p-2 rounded-lg border border-slate-200 bg-white text-slate-600 hover:bg-slate-50 hover:text-blue-600 disabled:opacity-50 disabled:cursor-not-allowed transition-colors shadow-sm"
               >
                 <ChevronRight size={18} />
               </button>
@@ -429,12 +442,12 @@ export default function ProductManagement() {
 
                   <div className="col-span-2">
                     <label className="block text-sm font-medium text-gray-700 mb-1">Product Image</label>
-                    <div className="mt-1 flex justify-center px-6 pt-5 pb-6 border-2 border-gray-300 border-dashed rounded-xl bg-gray-50 hover:bg-gray-100 transition-colors">
-                      <div className="space-y-1 text-center">
-                        <Upload className="mx-auto h-12 w-12 text-gray-400" />
-                        <div className="flex text-sm text-gray-600 justify-center">
-                          <label className="relative cursor-pointer bg-transparent rounded-md font-medium text-blue-600 hover:text-blue-700 focus-within:outline-none">
-                            <span>Upload a file</span>
+                    <div className="mt-1 flex justify-center px-6 pt-5 pb-6 border-2 border-gray-300 border-dashed rounded-xl bg-gray-50 hover:bg-gray-100 transition-colors relative">
+                      {imagePreview ? (
+                        <div className="flex flex-col items-center">
+                          <img src={imagePreview} alt="Preview" className="h-32 w-32 object-cover rounded-lg shadow-sm mb-4 border border-gray-200" />
+                          <label className="cursor-pointer bg-white px-3 py-1.5 border border-gray-300 rounded-md text-sm font-medium text-gray-700 hover:bg-gray-50 shadow-sm">
+                            <span>Change Image</span>
                             <input 
                               type="file" 
                               className="sr-only" 
@@ -443,10 +456,25 @@ export default function ProductManagement() {
                             />
                           </label>
                         </div>
-                        <p className="text-xs text-gray-500">
-                          {selectedFile ? selectedFile.name : 'PNG, JPG, GIF up to 10MB'}
-                        </p>
-                      </div>
+                      ) : (
+                        <div className="space-y-1 text-center">
+                          <Upload className="mx-auto h-12 w-12 text-gray-400" />
+                          <div className="flex text-sm text-gray-600 justify-center">
+                            <label className="relative cursor-pointer bg-transparent rounded-md font-medium text-blue-600 hover:text-blue-700 focus-within:outline-none">
+                              <span>Upload a file</span>
+                              <input 
+                                type="file" 
+                                className="sr-only" 
+                                accept="image/*"
+                                onChange={handleFileChange}
+                              />
+                            </label>
+                          </div>
+                          <p className="text-xs text-gray-500">
+                            PNG, JPG, GIF up to 10MB
+                          </p>
+                        </div>
+                      )}
                     </div>
                   </div>
                 </div>
@@ -480,6 +508,6 @@ export default function ProductManagement() {
         message="Are you sure you want to delete this product? This action cannot be undone."
         confirmText="Delete"
       />
-    </>
+    </div>
   );
 }

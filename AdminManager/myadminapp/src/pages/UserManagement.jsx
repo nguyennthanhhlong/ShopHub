@@ -33,6 +33,19 @@ export default function UserManagement() {
     return () => clearTimeout(delayDebounceFn);
   }, [currentPage, searchQuery]);
 
+  const getCurrentUserEmail = () => {
+    const token = localStorage.getItem('token');
+    if (token) {
+      try {
+        const payload = JSON.parse(atob(token.split('.')[1]));
+        return payload.email;
+      } catch (e) {
+        console.error("Failed to decode token", e);
+      }
+    }
+    return null;
+  };
+
   const fetchUsers = async () => {
     try {
       setLoading(true);
@@ -40,11 +53,14 @@ export default function UserManagement() {
         ? `/admin/users/search/${searchQuery}?pageNumber=${currentPage}&pageSize=${pageSize}`
         : `/admin/users?pageNumber=${currentPage}&pageSize=${pageSize}`;
       const response = await axiosClient.get(url);
+      
+      const currentUserEmail = getCurrentUserEmail();
+      
       if (response && response.content) {
-        setUsers(response.content);
+        setUsers(response.content.filter(u => u.email !== currentUserEmail));
         setTotalPages(response.totalPages || 1);
       } else if (Array.isArray(response)) {
-        setUsers(response);
+        setUsers(response.filter(u => u.email !== currentUserEmail));
         setTotalPages(1);
       } else {
         setUsers([]);
@@ -107,20 +123,20 @@ export default function UserManagement() {
   };
 
   return (
-    <>
+    <div className="animate-fade-in-up">
       <div className="flex justify-between items-center mb-6">
         <div>
-          <h1 className="text-2xl font-bold text-gray-800 tracking-tight">Users</h1>
-          <p className="text-sm text-gray-500 mt-1">Manage system users and roles</p>
+          <h1 className="text-3xl font-extrabold text-slate-900 tracking-tight">User Management</h1>
+          <p className="text-sm text-slate-500 mt-1">Manage system users, roles, and profiles</p>
         </div>
       </div>
 
-      <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
+      <div className="bg-white/80 backdrop-blur-xl rounded-2xl shadow-sm border border-slate-100/60 overflow-hidden relative">
         {/* Toolbar */}
-        <div className="p-4 border-b border-gray-100 flex items-center bg-gray-50/50">
-          <div className="relative w-full sm:w-72">
-            <span className="absolute inset-y-0 left-0 pl-3 flex items-center">
-              <Search size={18} className="text-gray-400" />
+        <div className="p-5 border-b border-slate-100/60 flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-white/50">
+          <div className="relative w-full sm:w-96 group">
+            <span className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400 group-focus-within:text-blue-500 transition-colors">
+              <Search size={18} />
             </span>
             <input 
               type="text" 
@@ -130,7 +146,7 @@ export default function UserManagement() {
                 setSearchQuery(e.target.value);
                 setCurrentPage(1);
               }}
-              className="w-full bg-white border border-gray-200 rounded-lg pl-10 pr-4 py-2 text-sm focus:border-blue-500 focus:ring-1 focus:ring-blue-500 outline-none transition-all"
+              className="w-full bg-slate-50/50 border border-slate-200 rounded-xl pl-10 pr-4 py-2.5 text-sm font-medium text-slate-800 placeholder-slate-400 focus:bg-white focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 outline-none transition-all duration-300"
             />
           </div>
         </div>
@@ -138,72 +154,69 @@ export default function UserManagement() {
         {/* Table */}
         <div className="overflow-x-auto min-h-[400px]">
           {loading ? (
-             <div className="flex justify-center items-center h-64">
-               <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+             <div className="flex flex-col justify-center items-center h-64 text-blue-500">
+               <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-blue-600 mb-4"></div>
+               <p className="text-sm font-medium animate-pulse text-slate-500">Loading users...</p>
              </div>
           ) : (
-            <table className="w-full text-left text-sm text-gray-600">
-              <thead className="bg-gray-50/80 text-xs uppercase text-gray-500 border-b border-gray-100 sticky top-0">
+            <table className="w-full text-left text-sm text-slate-600">
+              <thead className="bg-slate-50/80 text-xs font-semibold uppercase tracking-wider text-slate-500 border-b border-slate-100">
                 <tr>
-                  <th scope="col" className="px-6 py-4 font-semibold tracking-wider">User</th>
-                  <th scope="col" className="px-6 py-4 font-semibold tracking-wider">Contact</th>
-                  {/* <th scope="col" className="px-6 py-4 font-semibold tracking-wider">Roles</th> */}
-                  <th scope="col" className="px-6 py-4 font-semibold tracking-wider text-right">Actions</th>
+                  <th scope="col" className="px-6 py-4">User</th>
+                  <th scope="col" className="px-6 py-4">Contact</th>
+                  <th scope="col" className="px-6 py-4 text-right">Actions</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-gray-100">
+              <tbody className="divide-y divide-slate-100/80">
                 {users.length === 0 ? (
                   <tr>
-                    <td colSpan="4" className="px-6 py-12 text-center">
-                      <div className="flex flex-col items-center justify-center text-gray-400">
-                        <Inbox size={48} className="mb-4 opacity-50" />
-                        <p className="text-lg font-medium text-gray-600">No users found</p>
+                    <td colSpan="3" className="px-6 py-16 text-center">
+                      <div className="flex flex-col items-center justify-center text-slate-400">
+                        <div className="bg-slate-50 p-4 rounded-full mb-4">
+                          <Inbox size={48} className="text-slate-300" />
+                        </div>
+                        <p className="text-lg font-bold text-slate-700">No users found</p>
                         <p className="text-sm mt-1">There are no users matching your criteria.</p>
                       </div>
                     </td>
                   </tr>
                 ) : users.map((user) => (
-                  <tr key={user.userId} className="hover:bg-blue-50/50 transition-colors group">
+                  <tr key={user.userId} className="hover:bg-slate-50/80 transition-colors group">
                     <td className="px-6 py-4 whitespace-nowrap">
-                      <div className="flex items-center">
-                        <div className="h-10 w-10 rounded-full bg-gradient-to-tr from-blue-100 to-indigo-100 text-indigo-600 flex items-center justify-center font-bold uppercase shadow-sm">
+                      <div className="flex items-center gap-3">
+                        <div className="h-10 w-10 rounded-full bg-gradient-to-tr from-blue-100 to-indigo-100 text-indigo-600 flex items-center justify-center font-bold uppercase shadow-inner">
                           {(user.firstName?.[0] || '')}{(user.lastName?.[0] || '')}
                         </div>
-                        <div className="ml-4">
-                          <div className="text-sm font-semibold text-gray-900">{user.firstName} {user.lastName}</div>
-                          <div className="text-xs text-gray-500">ID: #{user.userId}</div>
+                        <div className="flex flex-col">
+                          <span className="font-bold text-slate-900">{user.firstName} {user.lastName}</span>
+                          <span className="text-xs font-medium text-slate-500 mt-0.5">ID: #{user.userId}</span>
                         </div>
                       </div>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
-                      <div className="text-sm font-medium text-gray-900">{user.email}</div>
-                      <div className="text-xs text-gray-500 mt-0.5">{user.mobileNumber || 'No phone number'}</div>
-                    </td>
-                    {/* <td className="px-6 py-4 whitespace-nowrap">
-                      <div className="flex gap-1.5">
-                        {user.roles && user.roles.map(role => (
-                          <span key={role.roleId} className={`px-2.5 py-1 inline-flex items-center text-xs leading-5 font-semibold rounded-full border ${role.roleName === 'ADMIN' ? 'bg-red-50 text-red-700 border-red-100' : 'bg-gray-50 text-gray-700 border-gray-200'}`}>
-                            {role.roleName === 'ADMIN' ? <Shield size={12} className="mr-1" /> : <UserIcon size={12} className="mr-1" />}
-                            {role.roleName}
-                          </span>
-                        ))}
+                      <div className="flex flex-col">
+                        <span className="font-medium text-slate-700">{user.email}</span>
+                        <span className="text-xs text-slate-500 mt-0.5">{user.mobileNumber || 'No phone number'}</span>
                       </div>
-                    </td> */}
+                    </td>
                     <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                      <button 
-                        onClick={() => openEditModal(user)}
-                        className="text-gray-400 hover:text-blue-600 mx-2 p-1.5 rounded-md hover:bg-blue-50 transition-colors opacity-0 group-hover:opacity-100" 
-                        title="Edit User"
-                      >
-                        <Edit2 size={16} />
-                      </button>
-                      <button 
-                        onClick={() => handleDelete(user.userId)} 
-                        className="text-gray-400 hover:text-red-600 p-1.5 rounded-md hover:bg-red-50 transition-colors opacity-0 group-hover:opacity-100" 
-                        title="Deactivate"
-                      >
-                        <Trash2 size={16} />
-                      </button>
+                      <div className="flex justify-end items-center gap-2">
+                        <button 
+                          onClick={() => openEditModal(user)}
+                          className="flex items-center gap-1.5 text-slate-500 hover:text-blue-600 bg-white border border-slate-200 hover:border-blue-200 px-3 py-1.5 rounded-lg shadow-sm hover:bg-blue-50 transition-all opacity-0 group-hover:opacity-100" 
+                          title="Edit User"
+                        >
+                          <Edit2 size={16} />
+                          <span className="text-xs font-semibold">Edit</span>
+                        </button>
+                        <button 
+                          onClick={() => handleDelete(user.userId)} 
+                          className="flex items-center gap-1.5 text-slate-500 hover:text-rose-600 bg-white border border-slate-200 hover:border-rose-200 px-3 py-1.5 rounded-lg shadow-sm hover:bg-rose-50 transition-all opacity-0 group-hover:opacity-100" 
+                          title="Deactivate"
+                        >
+                          <Trash2 size={16} />
+                        </button>
+                      </div>
                     </td>
                   </tr>
                 ))}
@@ -214,22 +227,22 @@ export default function UserManagement() {
 
         {/* Pagination */}
         {!loading && users.length > 0 && (
-          <div className="px-6 py-4 border-t border-gray-100 flex items-center justify-between bg-gray-50/30">
-            <div className="text-sm text-gray-500">
-              Page <span className="font-medium text-gray-900">{currentPage}</span> of <span className="font-medium text-gray-900">{totalPages}</span>
+          <div className="px-6 py-4 border-t border-slate-100 flex items-center justify-between bg-slate-50/50">
+            <div className="text-sm text-slate-500 font-medium">
+              Page <span className="text-slate-900 font-bold">{currentPage}</span> of <span className="text-slate-900 font-bold">{totalPages}</span>
             </div>
             <div className="flex space-x-2">
               <button
                 onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
                 disabled={currentPage === 1}
-                className="p-1.5 rounded-md border border-gray-200 bg-white text-gray-500 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                className="p-2 rounded-lg border border-slate-200 bg-white text-slate-600 hover:bg-slate-50 hover:text-blue-600 disabled:opacity-50 disabled:cursor-not-allowed transition-colors shadow-sm"
               >
                 <ChevronLeft size={18} />
               </button>
               <button
                 onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
                 disabled={currentPage === totalPages}
-                className="p-1.5 rounded-md border border-gray-200 bg-white text-gray-500 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                className="p-2 rounded-lg border border-slate-200 bg-white text-slate-600 hover:bg-slate-50 hover:text-blue-600 disabled:opacity-50 disabled:cursor-not-allowed transition-colors shadow-sm"
               >
                 <ChevronRight size={18} />
               </button>
@@ -326,6 +339,6 @@ export default function UserManagement() {
         message="Are you sure you want to deactivate this user? They will not be able to log in."
         confirmText="Deactivate"
       />
-    </>
+    </div>
   );
 }

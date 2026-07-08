@@ -92,67 +92,90 @@ const Coupons = () => {
   };
 
   return (
-    <div className="p-6">
+    <div className="animate-fade-in-up p-6">
       <div className="flex justify-between items-center mb-6">
-        <h1 className="text-2xl font-bold text-gray-800">Quản lý Mã giảm giá</h1>
+        <div>
+          <h1 className="text-3xl font-extrabold text-slate-900 tracking-tight">Quản lý Mã giảm giá</h1>
+          <p className="text-sm text-slate-500 mt-1">Manage promotional coupons</p>
+        </div>
         <button
           onClick={() => handleOpenModal()}
-          className="flex items-center gap-2 bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition"
+          className="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2.5 px-5 rounded-xl shadow-lg hover:shadow-blue-500/30 hover:-translate-y-0.5 transition-all duration-300 flex items-center gap-2"
         >
-          <Plus className="h-5 w-5" />
+          <Plus size={18} />
           Thêm Mã mới
         </button>
       </div>
 
-      {loading ? (
-        <div className="text-center py-10">Đang tải dữ liệu...</div>
-      ) : (
-        <div className="bg-white rounded-lg shadow overflow-hidden">
-          <table className="min-w-full divide-y divide-gray-200">
-            <thead className="bg-gray-50">
-              <tr>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Mã Coupon</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">% Giảm</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Trạng thái</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Hạn sử dụng</th>
-                <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase">Hành động</th>
-              </tr>
-            </thead>
-            <tbody className="bg-white divide-y divide-gray-200">
-              {coupons.map((c) => (
-                <tr key={c.couponId}>
-                  <td className="px-6 py-4 whitespace-nowrap font-medium text-gray-900">{c.code}</td>
-                  <td className="px-6 py-4 whitespace-nowrap">{c.discountPercent}%</td>
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <span
-                      className={`px-2 py-1 text-xs font-semibold rounded-full ${
-                        c.isActive ? "bg-green-100 text-green-800" : "bg-red-100 text-red-800"
-                      }`}
-                    >
-                      {c.isActive ? "Đang hoạt động" : "Đã tắt"}
-                    </span>
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{formatDate(c.expiryDate)}</td>
-                  <td className="px-6 py-4 whitespace-nowrap text-center">
-                    <button
-                      onClick={() => handleOpenModal(c)}
-                      className="text-indigo-600 hover:text-indigo-900 mr-4"
-                    >
-                      <Pencil className="h-5 w-5 inline" />
-                    </button>
-                    <button
-                      onClick={() => handleDelete(c.couponId)}
-                      className="text-red-600 hover:text-red-900"
-                    >
-                      <Trash2 className="h-5 w-5 inline" />
-                    </button>
-                  </td>
+      <div className="bg-white/80 backdrop-blur-xl rounded-2xl shadow-sm border border-slate-100/60 overflow-hidden relative">
+        <div className="overflow-x-auto min-h-[300px]">
+          {loading ? (
+             <div className="flex flex-col justify-center items-center h-64 text-blue-500">
+               <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-blue-600 mb-4"></div>
+               <p className="text-sm font-medium animate-pulse text-slate-500">Đang tải dữ liệu...</p>
+             </div>
+          ) : (
+            <table className="w-full text-left text-sm text-slate-600">
+              <thead className="bg-slate-50/80 text-xs font-semibold uppercase tracking-wider text-slate-500 border-b border-slate-100">
+                <tr>
+                  <th scope="col" className="px-6 py-4">Mã Coupon</th>
+                  <th scope="col" className="px-6 py-4">% Giảm</th>
+                  <th scope="col" className="px-6 py-4">Trạng thái</th>
+                  <th scope="col" className="px-6 py-4">Hạn sử dụng</th>
+                  <th scope="col" className="px-6 py-4 text-right">Hành động</th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
+              </thead>
+              <tbody className="divide-y divide-slate-100/80">
+                {coupons.length === 0 ? (
+                  <tr>
+                    <td colSpan="5" className="px-6 py-16 text-center">
+                      <div className="flex flex-col items-center justify-center text-slate-400">
+                        <div className="bg-slate-50 p-4 rounded-full mb-4">
+                          <Plus size={48} className="text-slate-300" />
+                        </div>
+                        <p className="text-lg font-bold text-slate-700">Chưa có mã giảm giá</p>
+                        <p className="text-sm mt-1">Bấm "Thêm Mã mới" để tạo mã đầu tiên.</p>
+                      </div>
+                    </td>
+                  </tr>
+                ) : coupons.map((c) => (
+                  <tr key={c.couponId} className="hover:bg-slate-50/80 transition-colors group">
+                    <td className="px-6 py-4 whitespace-nowrap font-bold text-slate-900">{c.code}</td>
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <span className="font-bold text-blue-600">{c.discountPercent}%</span>
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <span className={`inline-flex items-center px-2.5 py-1 rounded-full text-xs font-bold border ${c.isActive ? "bg-emerald-50 text-emerald-600 border-emerald-200" : "bg-rose-50 text-rose-600 border-rose-200"}`}>
+                        {c.isActive ? "Đang hoạt động" : "Đã tắt"}
+                      </span>
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-slate-500">{formatDate(c.expiryDate)}</td>
+                    <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                      <div className="flex justify-end items-center gap-2">
+                        <button
+                          onClick={() => handleOpenModal(c)}
+                          className="flex items-center gap-1.5 text-slate-500 hover:text-blue-600 bg-white border border-slate-200 hover:border-blue-200 px-3 py-1.5 rounded-lg shadow-sm hover:bg-blue-50 transition-all opacity-0 group-hover:opacity-100"
+                          title="Sửa"
+                        >
+                          <Pencil size={16} />
+                          <span className="text-xs font-semibold">Sửa</span>
+                        </button>
+                        <button
+                          onClick={() => handleDelete(c.couponId)}
+                          className="flex items-center gap-1.5 text-slate-500 hover:text-rose-600 bg-white border border-slate-200 hover:border-rose-200 px-3 py-1.5 rounded-lg shadow-sm hover:bg-rose-50 transition-all opacity-0 group-hover:opacity-100"
+                          title="Xóa"
+                        >
+                          <Trash2 size={16} />
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          )}
         </div>
-      )}
+      </div>
 
       {/* Modal */}
       {isModalOpen && (
